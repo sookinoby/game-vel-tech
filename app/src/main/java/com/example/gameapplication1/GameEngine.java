@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -32,7 +33,7 @@ public class GameEngine extends SurfaceView implements Runnable {
 
     //This is used to help calculate the fps
     private long timeThisFrame;
-
+    private Bat bat;
 
     public GameEngine(Context context, int x, int y) {
         super(context);
@@ -40,6 +41,9 @@ public class GameEngine extends SurfaceView implements Runnable {
         screenY = y;
         ourHolder = getHolder();
         paint = new Paint();
+
+        //Initialize the player's bat
+        bat = new Bat(screenX, screenY);
 
     }
 
@@ -55,36 +59,62 @@ public class GameEngine extends SurfaceView implements Runnable {
     }
     public void run()
     {
-        while(playing)
-        {
+        while(playing) {
             //Capture the current time in milliseconds in startTimeFrame
             long startFrameTime = System.currentTimeMillis();
-            //Update the frame
-            if(!paused) {
+            if (!paused){
                 update();
             }
-            //Draw the frame
             draw();
             timeThisFrame = System.currentTimeMillis() - startFrameTime;
-            if(timeThisFrame>0)
+            if(timeThisFrame>=1)
                 fps = 1000/timeThisFrame;
         }
     }
 
     public void draw()
     {
-
-    }
-    public void update()
-    {
         if(ourHolder.getSurface().isValid())
         {
             canvas = ourHolder.lockCanvas();
             canvas.drawColor(Color.argb(255,26, 128, 182));
             // Change the brush color for drawing
-            paint.setColor(Color.argb(255,  249, 129, 0));
+            paint.setColor(Color.argb(255,255,255,255));
+            canvas.drawRect(bat.getRect(), paint);
             ourHolder.unlockCanvasAndPost(canvas);
         }
+    }
+    private void update()
+    {
+        bat.update(fps);
 
     }
+
+    //The Surfaceview class implements onTouchListener
+    //So we can override this method and detect screen touches
+
+
+    /*public boolean onTouchEvent(MotionEvent motionEvent) {
+        switch(motionEvent.getAction() & MotionEvent.ACTION_MASK)
+        {
+            //Player has touched the screen
+            case MotionEvent.ACTION_DOWN:
+                paused = false;
+                if(motionEvent.getX()>screenX/2){
+                    bat.setMovementState(bat.RIGHT);
+                }
+                else
+                {
+                    bat.setMovementState(bat.LEFT);
+                }
+                break;
+
+                //Player has removed the finger from screen
+            case MotionEvent.ACTION_UP:
+                bat.setMovementState(bat.STOPPED);
+                break;
+        }
+
+        return true;
+    }*/
 }
